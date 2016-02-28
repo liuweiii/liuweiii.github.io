@@ -9,7 +9,7 @@ tags:
 - decorator
 ---
 <h1>1.Base Decorator</h1>
-`code 1` is the same of `code 2`
+The following two snippets are semantically identical
 
 [code 1]
 {% highlight python %}
@@ -48,8 +48,7 @@ if __name__ == '__main__':
 
 {% endhighlight %}
 
-theirs outputs are:
-
+output
 {% highlight html%}
 --------------
 before
@@ -58,8 +57,7 @@ after
 ==============
 {% endhighlight %}
 <h1>2.Decorator with parameters</h1>
-`code 3` is the same of `code 4`
-
+The following two snippets are semantically identical
 
 [code 3]
 {% highlight python %}
@@ -104,8 +102,7 @@ if __name__ == '__main__':
     print "=============="
 {% endhighlight %}
 
-theirs outputs are:
-
+output
 {% highlight html%}
 --------------
 deco1's param is deco1 param
@@ -142,3 +139,13 @@ if __name__ == '__main__':
     print "=============="
 {% endhighlight %}
 In `code 4`,if `print func.__name__` in `main`, output will be `__wrap`,but in `code 5`,the output is `func`.
+
+<h1>4.Class Decorator</h1>
+The semantics and design goals of class decorators are the same as for function decorators; the only difference is that you're decorating a class instead of a function.
+
+[reference]
+
+1.[pep-0318]
+
+
+[pep-0318]: https://www.python.org/dev/peps/pep-0318/

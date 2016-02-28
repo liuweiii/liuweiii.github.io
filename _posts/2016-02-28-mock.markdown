@@ -9,10 +9,4 @@ tags:
 - mock
 ---
 
-{% highlight python %}
-def decorator(func):
-  print "before"
-  func()
-  print "end"
-{% endhighlight %}
-
+planning
