@@ -1,0 +1,118 @@
+---
+layout: post
+title:  "CGI [todo]"
+date:   2016-02-29 21:33:20 +0800
+categories: network
+tags:
+- learn
+- python
+- cgi
+---
+
+CGI(Common Gateway Interface)
+
+This article's snippets are python codes.
+
+The core technology for CGI is "the mechanism of communicating from client to server".CGI 技术的核心是“客户端向服务器传递信息的机制”
+
+<h1>1.HTTP Server</h1>
+[code 1]TCP server for receive message from HTTP client,such as browser.
+
+{% highlight python linenos %}
+import socket
+HOST = '0.0.0.0'
+PORT = 80
+s = None
+for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC, socket.SOCK_STREAM, 0,
+                              socket.AI_PASSIVE):
+    af, sock_type, proto, _, sa = res
+    s = socket.socket(af, sock_type, proto)
+    s.bind(sa)
+    s.listen(1)
+    break
+conn, _ = s.accept()
+data = conn.recv(1024)
+print data
+conn.close()
+{% endhighlight %}
+
+type `http://localhost/path/to/me?param=123` into browser,the output of `code 1` will be
+
+[output 1]
+{% highlight html %}
+GET /path/to/me?param=123 HTTP/1.1
+Host: localhost
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: zh-CN,zh;q=0.8
+{% endhighlight %}
+
+[code 2]We add response to our code.
+
+{% highlight python linenos %}
+import socket
+HOST = '0.0.0.0'
+PORT = 80
+s = None
+for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC, socket.SOCK_STREAM, 0,
+                              socket.AI_PASSIVE):
+    af, sock_type, proto, _, sa = res
+    s = socket.socket(af, sock_type, proto)
+    s.bind(sa)
+    s.listen(1)
+    break
+conn, _ = s.accept()
+data = conn.recv(1024)
+print data
+conn.send("<html>hello world</html>")
+conn.close()
+{% endhighlight %}
+
+type `http://localhost` into browser, we'll say `hello world` in browser.
+<h1>2.HTTP Client</h1>
+We copy `output 1` as inputs of our `[code 3]HTTP Client`
+
+[code 3]HTTP Client 
+
+{% highlight python linenos %}
+import socket
+HOST = '127.0.0.1'
+PORT = 80
+HEAD = """
+GET /path/to/me?param=123 HTTP/1.1
+Host: localhost
+Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36
+Accept-Encoding: gzip, deflate, sdch
+Accept-Language: zh-CN,zh;q=0.8
+"""
+s = None
+for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC, socket.SOCK_STREAM):
+    af, sock_type, proto, _, sa = res
+    s = socket.socket(af, sock_type, proto)
+    s.connect(sa)
+    break
+s.send(HEAD)
+data = s.recv(1024)
+while data:
+    print data
+    data = s.recv(1024)
+s.close()
+{% endhighlight %}
+
+Run `code 2` ,then run `code 3`, we'll see the `output 2`:
+
+[output 2]
+{% highlight html linenos%}
+<html>hello world</html>
+{% endhighlight %}
+
+In the previous article, we have simulated the transformation of static web pages by HTTP/TCP.
+Now we'll see ...
