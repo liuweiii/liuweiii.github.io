@@ -15,8 +15,8 @@ This article's snippets are python codes.
 
 The core technology for CGI is "the mechanism of communicating from client to server".CGI 技术的核心是“客户端向服务器传递信息的机制”
 
-<h1>1.HTTP Server</h1>
-[code 1]TCP server for receive message from HTTP client,such as browser.
+<h1>1.HTTP/TCP Server</h1>
+[code 1]HTTP/TCP server for receiving message from HTTP client,such as browser.
 
 {% highlight python linenos %}
 import socket
@@ -113,6 +113,58 @@ Run `code 2` ,then run `code 3`, we'll see the `output 2`:
 {% highlight html linenos%}
 <html>hello world</html>
 {% endhighlight %}
-
+<h1>3.CGI server(HTTP/TCP server) and CGI application</h1>
+The CGI server processes all of the client's requests is not realistic usually.Note that, in real life, our CGI server sends the client's requests to CGI applications, then return CGI applications' results to the client. 
+{% highlight html %}
+ +-----------+   1  +------------+   2   +-----------------+
+ |           | ===> |            | ====> |                 |
+ |  clients  |      | CGI server |       | CGI application |
+ |           |   4  |            |   3   |                 |      
+ +-----------+ <=== +------------+ <==== +-----------------+
+{% endhighlight %}	
 In the previous article, we have simulated the transformation of static web pages by HTTP/TCP.
-Now we'll see ...
+Now we'll see how CGI Server communication with CGI application.
+
+[code 4] CGI server `cgiserver.py`
+
+{% highlight python linenos %}
+import sys
+import os
+class TMyOut(object):
+    def __init__(self):
+        self.__s = ""
+    def write(self, s):
+        self.__s += s
+    def readall(self):
+        return self.__s
+# save stdout
+save_stdout = sys.stdout
+# use environment variables to send message to `cgi applications`
+env = {"A1": "Hello", "A2": "world"}
+os.environ.update(env)
+# redirect stdout to our out,so that `cgi applications` can send message to `cgi server` by stdout
+my_out = TMyOut()
+sys.stdout = my_out
+# execute `cgi application`
+execfile("cgi_application.py")
+# recover stdout
+sys.stdout = save_stdout
+print "my out : " + my_out.readall()
+{% endhighlight %}
+
+[code 5] CGI application `cgi_application.py`
+
+{% highlight python linenos %}
+import os
+s = os.environ["A1"] + " " + os.environ["A2"] + "!"
+print s
+{% endhighlight %}
+
+the output will be `my out : Hello world!`
+
+[reference]
+
+1.[沈著初级CGI：原理]
+
+
+[沈著初级CGI：原理]: http://www.cnblogs.com/brothertao/archive/2011/03/27/1996645.html
