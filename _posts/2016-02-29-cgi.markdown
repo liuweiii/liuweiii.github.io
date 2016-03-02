@@ -1,12 +1,9 @@
 ---
 layout: post
-title:  "CGI [todo]"
+title:  "CGI"
 date:   2016-02-29 21:33:20 +0800
 categories: network
-tags:
-- learn
-- python
-- cgi
+tags: [learn, python, cgi]
 ---
 
 CGI(Common Gateway Interface)
@@ -124,6 +121,8 @@ The CGI server processes all of the client's requests is not realistic usually.N
 {% endhighlight %}	
 In the previous article, we have simulated the transformation of static web pages by HTTP/TCP.
 Now we'll see how CGI Server communication with CGI application.
+![cgi-1](/public/img/2016-02-29-cgi-1.gif)
+![cgi-2](/public/img/2016-02-29-cgi-2.gif)
 
 [code 4] CGI server `cgiserver.py`
 

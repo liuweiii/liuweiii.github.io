@@ -1,0 +1,26 @@
+---
+layout: post
+title:  "WSGI"
+date:   2016-03-02 21:33:20 +0800
+categories: network
+tags: [learn, python, wsgi]
+---
+
+WSGI(Python Web Server Gateway Interface)
+
+<h1>翻译自wsgi v1.0</h1>
+
+
+<h1>翻译自wsgi v1.1</h1>
+
+
+
+
+[reference]
+
+1.[pep-0333]
+
+2.[pep-3333]
+
+[pep-0333]: https://www.python.org/dev/peps/pep-0333/
+[pep-3333]: https://www.python.org/dev/peps/pep-3333/
