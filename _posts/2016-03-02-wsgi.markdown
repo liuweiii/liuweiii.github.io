@@ -12,35 +12,36 @@ WSGI(Python Web Server Gateway Interface)
 <h2>1.前言</h2>
 注意: 如果要看该细则的升级版本——支持Python 3.x，包括社区勘误表、附录、说明——请参考[pep-3333]。
 <h2>2.摘要</h2>
-本文定义了一种web服务器和python web应用程序（或框架）之间的建议标准接口，来增强web应用程序与多种web servers之间的可移植性。
+本文定义了一种web服务器和python web应用程序（或framework）之间的建议标准接口，来增强web应用程序与多种web servers之间的可移植性。
 <h2>3.基本原理和目标</h2>
-python当前已有很多web应用程序框架，如Zope、Quixote、Webware、SkunkWeb、PSO和Twisted Web（[1]）。如此之多的选择对于python的新手们来说是个问题，通常他们所选的web框架会限制他们对web servers的选择，反之亦然。
+python当前已有很多web应用程序framework，如Zope、Quixote、Webware、SkunkWeb、PSO和Twisted Web（[1]）。如此之多的选择对于python的新手们来说是个问题，通常他们所选的web framework会限制他们对web servers的选择，反之亦然。
 
-相比之下，虽然Java也拥有很多可选的web应用程序框架，但其“servlet” API使任何使用Java web应用程序框架所写的应用程序可以在任意支持servlet API的web servers里运行成为可能。
+相比之下，虽然Java也拥有很多可选的web应用程序framework，但其“servlet” API使任何使用Java web应用程序framework所写的应用程序可以在任意支持servlet API的web servers里运行成为可能。
 
-Python web servers这种API的可用性及广泛性——无论这些servers 是用Pyton写的（如[Medusa]），嵌入Python（如[mod_python]），或通过网关协议调用的Python（如CGI、FastCGI等）——将使对web server和框架的选择分开，让用户自由选择一对他们想要的，同时让框架和server开发者专注于他们所擅长的领域。
+Python web servers这种API的可用性及广泛性——无论这些servers 是用Pyton写的（如[Medusa]），嵌入Python（如[mod_python]），或通过网关协议调用的Python（如CGI、FastCGI等）——将使对web server和framework的选择分开，让用户自由选择一对他们想要的，同时让framework和server开发者专注于他们所擅长的领域。
 
-因此，本PEP建议了一种简单且通用的web servers和web应用程序（或框架）直接的接口：即Python Web Server Gateway Interface（WSGI）。
+因此，本PEP建议了一种简单且通用的web servers和web应用程序（或framework）直接的接口：即Python Web Server Gateway Interface（WSGI）。
 
-但是一个WSGI细则的存在并没有解决Python web应用程序的servers和框架目前的状况。为了达到效果，server和框架的作者和维护人员需要自己实现WSGI。
+但是一个WSGI细则的存在并没有解决Python web应用程序的servers和frameworks目前的状况。为了达到效果，server和framework的作者和维护人员需要自己实现WSGI。
 
-然而没有已存在的servers或框架支持，实现WSGI几乎没有捷径。因此，WSGI必须容易实现，让人们的以合理较低的代价来投入。
+然而没有已存在的servers或frameworks支持，实现WSGI几乎没有捷径。因此，WSGI必须容易实现，让人们的以合理较低的代价来投入。
 
-所以，接口在server和框架侧的简单实现，对WSGI接口工具是决定性的，且是任何设计决策是主要的标准。
+所以，接口在server和framework侧的简单实现，对WSGI接口工具是决定性的，且是任何设计决策是主要的标准。
 
-实现的简单性，对于一个框架作者和web应用程序作者来说是不一样的。WSGI提出一个绝对“不提供不必要东西”的接口给框架作者，因为其他诸如response对象和cookie操作只会阻碍已有框架对这些的处理。此外，WSGI的目的是促进已有servers和应用程序（或框架）直接的简单互联，而不是创建一个新的web框架。
+实现的简单性，对于一个framework作者和web应用程序作者来说是不一样的。WSGI提出一个绝对“不提供不必要东西”的接口给framework作者，因为其他诸如response对象和cookie操作只会阻碍已有framework对这些的处理。此外，WSGI的目的是促进已有servers和应用程序（或framework）直接的简单互联，而不是创建一个新的web framework。
 
-Note also that this goal precludes WSGI from requiring anything that is not already available in deployed versions of Python. Therefore, new standard library modules are not proposed or required by this specification, and nothing in WSGI requires a Python version greater than 2.2.2. (It would be a good idea, however, for future versions of Python to include support for this interface in web servers provided by the standard library.)
+注意，该目标阻止WSGI要求现有python版本额外的特性。因此，该规范不要求新标准库模块的支持，也不需要Python2.2.2以上版本的新特性支持。（对于未来Python版本使用标准库支持该web servers接口来说是个好主意）
 
-In addition to ease of implementation for existing and future frameworks and servers, it should also be easy to create request preprocessors, response postprocessors, and other WSGI-based "middleware" components that look like an application to their containing server, while acting as a server for their contained applications.
+对于现有的和未来的frameworks和servers，除了易于实施外，还要易于创建request preprocessors、response postprocessors和其他的基于WSGI的“middleware”组件，使其一方面对于包含他们的server来说表现得像一个应用程序，另一方面对于他们所包含的应用程序来说表现得像一个server。
 
-If middleware can be both simple and robust, and WSGI is widely available in servers and frameworks, it allows for the possibility of an entirely new kind of Python web application framework: one consisting of loosely-coupled WSGI middleware components. Indeed, existing framework authors may even choose to refactor their frameworks' existing services to be provided in this way, becoming more like libraries used with WSGI, and less like monolithic frameworks. This would then allow application developers to choose "best-of-breed" components for specific functionality, rather than having to commit to all the pros and cons of a single framework.
+如果middleware是简单又鲁棒的，且WSGI对servers和frameworks来说是可用的，一种全新的Python web 应用程序framework将成为可能：一种包含松耦合的WSGI中间件组件。现有framework的作者甚至可能只需重构他们的的services为支持该方式，使之像使用WSGI的库，而不像完整的framework。如此，可以让应用程序开发者为特定功能选择最佳组件组合，而不需要把整个framework无论有用无用的部分都一并提交。
 
-Of course, as of this writing, that day is doubtless quite far off. In the meantime, it is a sufficient short-term goal for WSGI to enable the use of any framework with any server.
+当然，在撰写本文时，实现这些的那一天还很遥远。在此期间，其足够短期的目标是让WSGI支持任何framework和server使用。
 
-Finally, it should be mentioned that the current version of WSGI does not prescribe any particular mechanism for "deploying" an application for use with a web server or server gateway. At the present time, this is necessarily implementation-defined by the server or gateway. After a sufficient number of servers and frameworks have implemented WSGI to provide field experience with varying deployment requirements, it may make sense to create another PEP, describing a deployment standard for WSGI servers and application frameworks.
+最后应当注意，当前版本的WSGI没有对使用web server或server 网关来部署应用程序作任何原则性说明。目前，通过server或网关来实现定义该部署原则是必要的。当足够多的servers和frameworks实现WSGI，提供足够的部署方面的需求和经验后，就可以创建另一个描述WSGI servers和应用程序framework部署标准的PEP。
 
-Specification Overview
+<h2>4.规范概述</h2>
+WSGI接口有两侧：server（或gateway）侧，application（或framework）侧。server侧调用application侧提供的callable的对象。该对象该如何提供应由server（或gateway）来决定。这是基于这样一个假设：某些servers（或gateways）需要application的部署人员写一个短的脚本来创建server（或gateway）的实例，并且为它提供一个application对象。
 The WSGI interface has two sides: the "server" or "gateway" side, and the "application" or "framework" side. The server side invokes a callable object that is provided by the application side. The specifics of how that object is provided are up to the server or gateway. It is assumed that some servers or gateways will require an application's deployer to write a short script to create an instance of the server or gateway, and supply it with the application object. Other servers and gateways may use configuration files or other mechanisms to specify where an application object should be imported from, or otherwise obtained.
 
 In addition to "pure" servers/gateways and applications/frameworks, it is also possible to create "middleware" components that implement both sides of this specification. Such components act as an application to their containing server, and as a server to a contained application, and can be used to provide extended APIs, content transformation, navigation, and other useful functions.
