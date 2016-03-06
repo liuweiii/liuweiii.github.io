@@ -41,28 +41,28 @@ Python web servers这种API的可用性及广泛性——无论这些servers 是
 最后应当注意，当前版本的WSGI没有对使用web server或server 网关来部署应用程序作任何原则性说明。目前，通过server或网关来实现定义该部署原则是必要的。当足够多的servers和frameworks实现WSGI，提供足够的部署方面的需求和经验后，就可以创建另一个描述WSGI servers和应用程序framework部署标准的PEP。
 
 <h2>4.规范概述</h2>
-WSGI接口有两侧：server（或gateway）侧，application（或framework）侧。server侧调用application侧提供的callable的对象。该对象该如何提供应由server（或gateway）来决定。这是基于这样一个假设：某些servers（或gateways）需要application的部署人员写一个短的脚本来创建server（或gateway）的实例，并且为它提供一个application对象。
-The WSGI interface has two sides: the "server" or "gateway" side, and the "application" or "framework" side. The server side invokes a callable object that is provided by the application side. The specifics of how that object is provided are up to the server or gateway. It is assumed that some servers or gateways will require an application's deployer to write a short script to create an instance of the server or gateway, and supply it with the application object. Other servers and gateways may use configuration files or other mechanisms to specify where an application object should be imported from, or otherwise obtained.
+WSGI接口有两侧：server（或gateway）侧，application（或framework）侧。server侧调用application侧提供的callable的对象。该对象该如何提供应由server（或gateway）来决定。这是基于这样一个假设：某些servers（或gateways）需要application的部署人员写一个短的脚本来创建server（或gateway）的实例，并且为它提供application对象。其他servers（或gateways）可用配置文件或其他手段指定该导入的application对象。
 
-In addition to "pure" servers/gateways and applications/frameworks, it is also possible to create "middleware" components that implement both sides of this specification. Such components act as an application to their containing server, and as a server to a contained application, and can be used to provide extended APIs, content transformation, navigation, and other useful functions.
+除了“纯粹的”servers/gateways和applications/frameworks，还需要创建“middleware”组件来实现该规范的两侧。该组件对包含它的server来说表现得像一个application，对它所包含的application来说表现得像一个server，可用于提供扩展的API、内容转换、导航和其他有用的功能。
 
-Throughout this specification, we will use the term "a callable" to mean "a function, method, class, or an instance with a __call__ method". It is up to the server, gateway, or application implementing the callable to choose the appropriate implementation technique for their needs. Conversely, a server, gateway, or application that is invoking a callable must not have any dependency on what kind of callable was provided to it. Callables are only to be called, not introspected upon.
+在本规范中，我们使用术语“a callable”来代表“一个函数、方法、类或一个有__call__方法的实例”。这取决于server、gateway或application根据其需要使用合适的方式实现callable。相反地，一个调用callable的server、gateway或application不可以依赖callable的具体实现方式。callable只能被called，不能被自省（not introspected upon）。
 
-The Application/Framework Side
-The application object is simply a callable object that accepts two arguments. The term "object" should not be misconstrued as requiring an actual object instance: a function, method, class, or instance with a __call__ method are all acceptable for use as an application object. Application objects must be able to be invoked more than once, as virtually all servers/gateways (other than CGI) will make such repeated requests.
+<h3>4.1 Application/Framework侧</h3>
+“application对象”仅仅是一个接受2个参数的callable对象。术语“对象”不要被误解为一个实实在在的对象实例：一个函数、方法、类或一个有__call__方法的实例都可以被作为“application对象”。application对象必须能被多次调用，事实上所有servers/gateways（不是CGI）可以产生这种重复请求。
 
-(Note: although we refer to it as an "application" object, this should not be construed to mean that application developers will use WSGI as a web programming API! It is assumed that application developers will continue to use existing, high-level framework services to develop their applications. WSGI is a tool for framework and server developers, and is not intended to directly support application developers.)
+（注意：虽然我们称作一个“application”对象，但是不应该被解释为application开发人员要使用WSGI作为web编程的API！application开发人员将继续使用已有的、high-level框架服务来开发applications。WSGI是一种framework和server开发人员的工具，不会直接给application开发人员使用。）
 
-Here are two example application objects; one is a function, and the other is a class:
-
+这儿有两个application对象的例子；一个是函数，一个是类：
+{% highlight python linenos %}
 def simple_app(environ, start_response):
     """Simplest possible application object"""
     status = '200 OK'
     response_headers = [('Content-type', 'text/plain')]
     start_response(status, response_headers)
     return ['Hello world!\n']
+{% endhighlight %}
 
-
+{% highlight python linenos %}
 class AppClass:
     """Produce the same output, but using a class
 
@@ -87,9 +87,11 @@ class AppClass:
         response_headers = [('Content-type', 'text/plain')]
         self.start(status, response_headers)
         yield "Hello world!\n"
-The Server/Gateway Side
+{% endhighlight %}
+<h3>4.2 Server/Gateway侧</h3>
+对于来自HTTP客户端的每个request，server(或gateway)调用application的callable
 The server or gateway invokes the application callable once for each request it receives from an HTTP client, that is directed at the application. To illustrate, here is a simple CGI gateway, implemented as a function taking an application object. Note that this simple example has limited error handling, because by default an uncaught exception will be dumped to sys.stderr and logged by the web server.
-
+{% highlight python linenos %}
 import os, sys
 
 def run_with_cgi(application):
@@ -149,6 +151,8 @@ def run_with_cgi(application):
     finally:
         if hasattr(result, 'close'):
             result.close()
+{% endhighlight %}
+<h3>3. Middleware:工作在两侧的组件们</h3>
 Middleware: Components that Play Both Sides
 Note that a single object may play the role of a server with respect to some application(s), while also acting as an application with respect to some server(s). Such "middleware" components can perform such functions as:
 
