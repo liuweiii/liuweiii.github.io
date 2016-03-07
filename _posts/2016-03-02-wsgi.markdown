@@ -89,8 +89,8 @@ class AppClass:
         yield "Hello world!\n"
 {% endhighlight %}
 <h3>4.2 Server/Gateway侧</h3>
-对于来自HTTP客户端的每个request，server(或gateway)调用application的callable
-The server or gateway invokes the application callable once for each request it receives from an HTTP client, that is directed at the application. To illustrate, here is a simple CGI gateway, implemented as a function taking an application object. Note that this simple example has limited error handling, because by default an uncaught exception will be dumped to sys.stderr and logged by the web server.
+对于来自HTTP客户端的每个request，server(或gateway)调用application的callable（The server or gateway invokes the application callable once for each request it receives from an HTTP client, that is directed at the application. ）。如下例所示，一个用函数实现的简单CGI gateway，带有有一个application参数。注意这个简单的例子限制了错误处理，因为默认未catch的异常将会抛给sys.stderr并被web server给记录到日志。
+
 {% highlight python linenos %}
 import os, sys
 
@@ -152,20 +152,21 @@ def run_with_cgi(application):
         if hasattr(result, 'close'):
             result.close()
 {% endhighlight %}
-<h3>3. Middleware:工作在两侧的组件们</h3>
-Middleware: Components that Play Both Sides
-Note that a single object may play the role of a server with respect to some application(s), while also acting as an application with respect to some server(s). Such "middleware" components can perform such functions as:
+<h3>3. Middleware:工作在两侧的组件</h3>
+既然一个单独的对象既可以对某些application(s)扮演server，也可以扮演对某些server(s)扮演application。“middleware”就可以提供这样的函数：
+<ul>
+<li>基于目标URL，路由一个request给不同的application对象，相应地重写environ。</li>
+<li>允许多个applications（或frameworks）并行地运行在相同的进程里。</li>
+<li>通过网络转发请求和响应实现负载均衡和远程处理。</li>
+<li>执行内容的后期处理，如应用XSL样式表。</li>
+</ul>
 
-Routing a request to different application objects based on the target URL, after rewriting the environ accordingly.
-Allowing multiple applications or frameworks to run side-by-side in the same process
-Load balancing and remote processing, by forwarding requests and responses over a network
-Perform content postprocessing, such as applying XSL stylesheets
-The presence of middleware in general is transparent to both the "server/gateway" and the "application/framework" sides of the interface, and should require no special support. A user who desires to incorporate middleware into an application simply provides the middleware component to the server, as if it were an application, and configures the middleware component to invoke the application, as if the middleware component were a server. Of course, the "application" that the middleware wraps may in fact be another middleware component wrapping another application, and so on, creating what is referred to as a "middleware stack".
+通常来说middleware的存在对接口的“server/gateway”和“application/framework”侧都是透明的，不需要特别的支持。如果想把middleware集成到application只需要简单地给server提供middleware组件，使其像一个application一样，并且配置middleware组件来调用application，使其又像一个server。当然，middleware包起来的“application”就是另一个middleware包含其他“application”的组件，组成一个称作为“middleware stack”的东西。
 
 For the most part, middleware must conform to the restrictions and requirements of both the server and application sides of WSGI. In some cases, however, requirements for middleware are more stringent than for a "pure" server or application, and these points will be noted in the specification.
 
 Here is a (tongue-in-cheek) example of a middleware component that converts text/plain responses to pig latin, using Joe Strout's piglatin.py . (Note: a "real" middleware component would probably use a more robust way of checking the content type, and should also check for a content encoding. Also, this simple example ignores the possibility that a word might be split across a block boundary.)
-
+{% highlight python linenos %}
 from piglatin import piglatin
 
 class LatinIter:
@@ -234,6 +235,7 @@ class Latinator:
 # Run foo_app under a Latinator's control, using the example CGI gateway
 from foo_app import foo_app
 run_with_cgi(Latinator(foo_app))
+{% endhighlight %}
 Specification Details
 The application object must accept two positional arguments. For the sake of illustration, we have named them environ and start_response , but they are not required to have these names. A server or gateway must invoke the application object using positional (not keyword) arguments. (E.g. by calling result = application(environ, start_response) as shown above.)
 
