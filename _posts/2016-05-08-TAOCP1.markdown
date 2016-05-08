@@ -1,0 +1,38 @@
+---
+layout: post
+title:  "TAOCP1 第一章 基本概念"
+date:   2016-02-29 21:33:20 +0800
+categories: TAOCP
+tags: [learn]
+---
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+# 算法 #
+
+## 算法的特征 ##
+
+- **有限性**：一个算法在执行有限步骤之后必然要终止。
+- **确定性**：一个算法的每个步骤都必须精确地定义；要执行的动作每一步都必须严格地和无歧义地描述清楚。
+- **输入**：有零个或多个输入。
+- **输出**：有一个或多个输出。
+- **能行性**：算法的所有运算必须是充分基本的，原则上人们可以用笔和纸在有限时间内精确地完成它们。
+
+*欧几里德算法的python实现*
+
+{% highlight python linenos %}
+def gcd(m, n):
+    r = m % n
+    return n if r is 0 else gcd(n, r)
+{% endhighlight %}
+
+## 计算方法的定义 ##
+
+- 四个量\\(Q,I,\Omega,f\\)分别表示*计算状态*、*输入*、*输出*、*计算规则*
+
+- \\(一个四元组(Q,I,\Omega,f),其中I\subset Q,\Omega\subset Q\\)
+- \\(f是从Q到自身的一个函数,即Q=\\{q\|f(q)\in Q,q\in Q\\} \\)
+- \\(f保持\Omega逐点不动：对于\Omega中的所有元素q，f(q)=q。即\Omega=\\{q\|q=f(q),q \in \Omega\\} \\)
+- \\(集合I中的每一个输入x,定义一个计算序列x\_0,x\_1,x\_2...：x\_0=x及对于k \geq 0，x\_{k+1}=f(x\_k)\\)
+
+\\(如果k是使x\_k在\Omega中为最小的整数,就说计算序列在\\)*k步终止*,而且在此种情况下,说\\(从x产生输出x\_k\\)

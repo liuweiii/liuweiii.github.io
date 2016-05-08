@@ -8,12 +8,12 @@ tags: [learn, python, wsgi]
 
 WSGI(Python Web Server Gateway Interface)
 
-<h1>翻译自wsgi v1.0</h1>
-<h2>1.前言</h2>
+# 翻译自wsgi v1.0 #
+## 1.前言 ##
 注意: 如果要看该细则的升级版本——支持Python 3.x，包括社区勘误表、附录、说明——请参考[pep-3333]。
-<h2>2.摘要</h2>
+## 2.摘要 ##
 本文定义了一种web服务器和python web应用程序（或framework）之间的建议标准接口，来增强web应用程序与多种web servers之间的可移植性。
-<h2>3.基本原理和目标</h2>
+## 3.基本原理和目标 ##
 python当前已有很多web应用程序framework，如Zope、Quixote、Webware、SkunkWeb、PSO和Twisted Web（[1]）。如此之多的选择对于python的新手们来说是个问题，通常他们所选的web framework会限制他们对web servers的选择，反之亦然。
 
 相比之下，虽然Java也拥有很多可选的web应用程序framework，但其“servlet” API使任何使用Java web应用程序framework所写的应用程序可以在任意支持servlet API的web servers里运行成为可能。
@@ -40,14 +40,14 @@ Python web servers这种API的可用性及广泛性——无论这些servers 是
 
 最后应当注意，当前版本的WSGI没有对使用web server或server 网关来部署应用程序作任何原则性说明。目前，通过server或网关来实现定义该部署原则是必要的。当足够多的servers和frameworks实现WSGI，提供足够的部署方面的需求和经验后，就可以创建另一个描述WSGI servers和应用程序framework部署标准的PEP。
 
-<h2>4.规范概述</h2>
+## 4.规范概述 ##
 WSGI接口有两侧：server（或gateway）侧，application（或framework）侧。server侧调用application侧提供的callable的对象。该对象该如何提供应由server（或gateway）来决定。这是基于这样一个假设：某些servers（或gateways）需要application的部署人员写一个短的脚本来创建server（或gateway）的实例，并且为它提供application对象。其他servers（或gateways）可用配置文件或其他手段指定该导入的application对象。
 
 除了“纯粹的”servers/gateways和applications/frameworks，还需要创建“middleware”组件来实现该规范的两侧。该组件对包含它的server来说表现得像一个application，对它所包含的application来说表现得像一个server，可用于提供扩展的API、内容转换、导航和其他有用的功能。
 
 在本规范中，我们使用术语“a callable”来代表“一个函数、方法、类或一个有__call__方法的实例”。这取决于server、gateway或application根据其需要使用合适的方式实现callable。相反地，一个调用callable的server、gateway或application不可以依赖callable的具体实现方式。callable只能被called，不能被自省（not introspected upon）。
 
-<h3>4.1 Application/Framework侧</h3>
+### 4.1 Application/Framework侧 ###
 “application对象”仅仅是一个接受2个参数的callable对象。术语“对象”不要被误解为一个实实在在的对象实例：一个函数、方法、类或一个有__call__方法的实例都可以被作为“application对象”。application对象必须能被多次调用，事实上所有servers/gateways（不是CGI）可以产生这种重复请求。
 
 （注意：虽然我们称作一个“application”对象，但是不应该被解释为application开发人员要使用WSGI作为web编程的API！application开发人员将继续使用已有的、high-level框架服务来开发applications。WSGI是一种framework和server开发人员的工具，不会直接给application开发人员使用。）
@@ -88,7 +88,7 @@ class AppClass:
         self.start(status, response_headers)
         yield "Hello world!\n"
 {% endhighlight %}
-<h3>4.2 Server/Gateway侧</h3>
+### 4.2 Server/Gateway侧 ###
 对于来自HTTP客户端的每个request，server(或gateway)调用application的callable（The server or gateway invokes the application callable once for each request it receives from an HTTP client, that is directed at the application. ）。如下例所示，一个用函数实现的简单CGI gateway，带有有一个application参数。注意这个简单的例子限制了错误处理，因为默认未catch的异常将会抛给sys.stderr并被web server给记录到日志。
 
 {% highlight python linenos %}
@@ -152,20 +152,21 @@ def run_with_cgi(application):
         if hasattr(result, 'close'):
             result.close()
 {% endhighlight %}
-<h3>3. Middleware:工作在两侧的组件</h3>
+### 3. Middleware:工作在两侧的组件 ###
 既然一个单独的对象既可以对某些application(s)扮演server，也可以扮演对某些server(s)扮演application。“middleware”就可以提供这样的函数：
-<ul>
-<li>基于目标URL，路由一个request给不同的application对象，相应地重写environ。</li>
-<li>允许多个applications（或frameworks）并行地运行在相同的进程里。</li>
-<li>通过网络转发请求和响应实现负载均衡和远程处理。</li>
-<li>执行内容的后期处理，如应用XSL样式表。</li>
-</ul>
+
+- 基于目标URL，路由一个request给不同的application对象，相应地重写environ。
+- 允许多个applications（或frameworks）并行地运行在相同的进程里。
+- 通过网络转发请求和响应实现负载均衡和远程处理。
+- 执行内容的后期处理，如应用XSL样式表。
+
 
 通常来说middleware的存在对接口的“server/gateway”和“application/framework”侧都是透明的，不需要特别的支持。如果想把middleware集成到application只需要简单地给server提供middleware组件，使其像一个application一样，并且配置middleware组件来调用application，使其又像一个server。当然，middleware包起来的“application”就是另一个middleware包含其他“application”的组件，组成一个称作为“middleware stack”的东西。
 
-For the most part, middleware must conform to the restrictions and requirements of both the server and application sides of WSGI. In some cases, however, requirements for middleware are more stringent than for a "pure" server or application, and these points will be noted in the specification.
+通常来说，middleware必须遵照WSGI的server和application这两侧的需求和限制。某些情况下middleware的需求比“纯粹的”server或application更严格，这些观点在本规范中要重视。
 
-Here is a (tongue-in-cheek) example of a middleware component that converts text/plain responses to pig latin, using Joe Strout's piglatin.py . (Note: a "real" middleware component would probably use a more robust way of checking the content type, and should also check for a content encoding. Also, this simple example ignores the possibility that a word might be split across a block boundary.)
+这里有个将text/plain格式响应转换为大拉丁语的middleware组件例子（不是很严格的），使用Joe Strout的piglatin.py。（注意：真正的middleware组件需要更健壮的检查content type的方式，并且要检查content encoding。本例忽略了字符跨边界的可能性。）
+
 {% highlight python linenos %}
 from piglatin import piglatin
 
@@ -236,7 +237,7 @@ class Latinator:
 from foo_app import foo_app
 run_with_cgi(Latinator(foo_app))
 {% endhighlight %}
-Specification Details
+## 规范详细 ##
 The application object must accept two positional arguments. For the sake of illustration, we have named them environ and start_response , but they are not required to have these names. A server or gateway must invoke the application object using positional (not keyword) arguments. (E.g. by calling result = application(environ, start_response) as shown above.)
 
 The environ parameter is a dictionary object, containing CGI-style environment variables. This object must be a builtin Python dictionary ( not a subclass, UserDict or other dictionary emulation), and the application is allowed to modify the dictionary in any way it desires. The dictionary must also include certain WSGI-required variables (described in a later section), and may also include server-specific extension variables, named according to a convention that will be described below.
