@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "TAOCP1 第一章 基本概念"
+title:  "TAOCP1.1 第一章 基本概念-算法"
 date:   2016-02-29 21:33:20 +0800
 categories: TAOCP
 tags: [learn]
@@ -8,9 +8,8 @@ tags: [learn]
 
 <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
-# 算法 #
 
-## 算法的特征 ##
+## 算法的特征
 
 - **有限性**：一个算法在执行有限步骤之后必然要终止。
 - **确定性**：一个算法的每个步骤都必须精确地定义；要执行的动作每一步都必须严格地和无歧义地描述清楚。
@@ -26,7 +25,7 @@ def gcd(m, n):
     return n if r is 0 else gcd(n, r)
 {% endhighlight %}
 
-## 计算方法的定义 ##
+## 计算方法的定义
 
 - 四个量\\(Q,I,\Omega,f\\)分别表示*计算状态*、*输入*、*输出*、*计算规则*
 

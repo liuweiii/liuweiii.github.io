@@ -1,0 +1,17 @@
+---
+layout: post
+title:  "TAOCP1.2 第一章 基本概念-数学准备"
+date:   2016-05-26 21:33:20 +0800
+categories: TAOCP
+tags: [learn]
+---
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
+
+## 数学归纳法
+证明算法正确性的一般方法：对算法给出一个流程图，对每个箭头标以在计算进过该箭头时有关当前事态的论断。即
+
+ *如果在执行一个框的操作之前，引向本框的任一个箭头所附的断言为真，则在该操作之后离开该框的有关箭头上的断言为真*
+
+一种程序设计语言中的每一个运算的语义定义，都可以作为一个逻辑规则系统地表述。这个逻辑规则精确地指出，事先根据什么断言是正确的，在运算之后，什么断言可被证明。
