@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "深入java虚拟机"
+title:  "深入java虚拟机-1 java体系结构和安全"
 date:   2016-07-09 10:33:20 +0800
 categories: java
 tags:
@@ -150,3 +150,4 @@ An opcode and its (optional) operands may refer to the data stored on the operan
 - 自动垃圾收集（不必显式释放被分配的内存）
 - 数组边界检查
 - 空引用检查
+
