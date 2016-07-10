@@ -9,11 +9,17 @@ tags: [learn, python, wsgi]
 WSGI(Python Web Server Gateway Interface)
 
 # 翻译自wsgi v1.0 #
+
 ## 1.前言 ##
+
 注意: 如果要看该细则的升级版本——支持Python 3.x，包括社区勘误表、附录、说明——请参考[pep-3333]。
+
 ## 2.摘要 ##
+
 本文定义了一种web服务器和python web应用程序（或framework）之间的建议标准接口，来增强web应用程序与多种web servers之间的可移植性。
+
 ## 3.基本原理和目标 ##
+
 python当前已有很多web应用程序framework，如Zope、Quixote、Webware、SkunkWeb、PSO和Twisted Web（[1]）。如此之多的选择对于python的新手们来说是个问题，通常他们所选的web framework会限制他们对web servers的选择，反之亦然。
 
 相比之下，虽然Java也拥有很多可选的web应用程序framework，但其“servlet” API使任何使用Java web应用程序framework所写的应用程序可以在任意支持servlet API的web servers里运行成为可能。
