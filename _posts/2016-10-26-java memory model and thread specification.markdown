@@ -70,3 +70,7 @@ k - 动作的类型：volatile read，volatile write，（非volatile）read，�
 v - 动作中涉及到的变量或管程
 
 u - 该动作的任意一个唯一标识符
+
+## 4. final字段
+
+final字段构造好后通常是不能被改变的，但是可以通过反射修改。
