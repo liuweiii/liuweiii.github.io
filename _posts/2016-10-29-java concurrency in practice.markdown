@@ -9,8 +9,160 @@ tags:
 - java
 ---
 
-**线程安全性**：当多个线程访问某个类时，这个类始终都能表现出正确的行为，那么就称这个类是线程安全的。
+## 1.线程安全性##
+
+### 1.1.线程安全性### 
+
+当多个线程访问某个类时，这个类始终都能表现出正确的行为，那么就称这个类是线程安全的。
 
 *当多个线程访问某个类时，不管运行时环境采用何种调度方式或者这些线程将如何交替运行，并且在主调代码中不需要任何额外的同步或协同，这个类都能表现出正确的行为，那么就称这个类是线程安全的。*
 
 无状态对象一定是线程安全的。
+
+### 1.2.原子性###
+
+i++和++i都不是原子操作，实际上包含了3个独立操作：读取值，将值加1，将结果写入。
+
+#### 1.2.1.竞态条件####
+
+在并发编程中，由于不恰当的执行时序而出现不正确的结果，就成为竞态条件。
+
+当某个计算的正确性取决于多个线程交替执行时序时，就会发生竞态条件，换句话说，就是正确的结果要取决于运气。最常见的竞态条件类型就是“先检查后执行”操作，即通过一个可能失效的观测结果来决定下一步的动作。
+
+*假定两个操作A和B，如果从执行A的线程来看，另一个线程执行B时，要么将B全部执行完，要么完全不执行B，那么A和B对彼此来说就是原子的。*
+
+#### 1.2.2.复合操作####
+
+将“先检查后执行”和“读取-修改-写入”等操作称为复合操作：包含了一组必须以原子方式执行的操作以确保线程安全性。
+
+### 1.3.加锁机制###
+
+*要保持状态的一致性，就需要在单个原子操作中更新所有相关的状态变量*
+
+#### 1.3.1.内置锁####
+
+{% highlight java linenos %}
+synchronized (lock){
+  //
+}
+{% endhighlight %}
+
+Java的内置锁相当于一种互斥锁，意味着最多只有一个线程能持有这种锁。
+
+#### 1.3.2.重入####
+
+当某个线程试图获得一个已经由自己持有的锁，这个请求会成功。重入的一种实现方法是，为每个锁关联一个获取计数值和一个所有者线程。
+
+### 1.4. 用锁来保护状态###
+
+*对于可能被多个线程同时访问的可变状态变量，在访问它时都需要持有同一个锁，在这种情况下，我们称状态变量是由这个锁保护的。*
+
+当获取与对象关联的锁时，并不能阻止其他线程访问该对象，只能阻止其他线程获得同一个锁。之所以每个对象都有一个内置锁，只是为了免去显式地创建锁对象。
+
+一种常见的加锁约定是，将所有可变状态都封装在对象内部，并通过对象的内置锁对所有访问可变状态的代码路径进行同步，使得在该对象上不会发生并发访问。
+
+并非所有数据都需要锁的保护，只有被多个线程同时访问的可变数据才需要通过锁来保护。
+
+*对于每个包含多个变量的不变性条件，其中涉及的所有变量都需要由同一个锁来保护*。
+
+### 1.5.活跃性与性能###
+
+*在简单性与性能之间存在着相互制约因素，当实现某个同步策略时，一定不要盲目地为了性能而牺牲简单性（可能会破坏安全性）。*
+
+*当执行时间较长的计算或者可能无法快速完成的操作时（如网络I/O或控制台I/O），一定不要持有锁。*
+
+## 2.对象的共享##
+
+### 2.1.可见性###
+
+加锁的含义不仅仅局限于互斥行为，还包括内存可见性。为了确保所有线程都能看到共享变量的最新值，所有执行读操作或写操作的线程都必须在同一个锁上同步。
+
+加锁机制既可以确保可见性又可以确保原子性，而volatile变量只能确保可见性。
+
+### 2.2.发布与逸出###
+
+**发布**： 讲一个指向该对象的引用保存到其他代码可以访问的地方，或者在某个非私有的方法中返回该引用，或者将引用传递到其他类的方法中。
+
+**逸出**：发布某个不应该发布的对象时，称为逸出。
+
+很多情况下，要确保对象及其内部状态不被发布；而某些情况下，又需要发布某个对象，但如果在发布时要确保线程安全性，则可能需要同步。发布内部状态可能会破坏封装性，使得程序难以维持不变性条件。例如，在对象构造完成之前就发布该对象，会破坏线程安全性。
+
+发布的几种方式：
+
+1. 将对象引用保存到一个公有静态变量中，以便任何类和线程都能看见该对象。
+
+2. 从非私有方法中返回一个引用，同样会发布返回的对象。
+
+3.  发布一个内部的类实例
+
+*不要在构造过程中使this引用逸出。*
+
+在构造过程中使this引用逸出的一个常见错误是，在构造函数中启动一个线程。在对象的构造函数中创建一个线程时，this引用都会被新创建的线程共享。在对象尚未完全构造之前，新的线程就可以看见它。在构造函数中创建线程并没有错，但最好不要立即启动它，而是通过一个start或initialize方法来启动。
+
+{% highlight java linenos %}
+public class Test {
+
+    private boolean isIt;
+
+    public Test() throws InterruptedException {
+        new Thread(new Runnable() {
+            public void run() {
+                System.out.println(isIt);
+            }
+        }).start();
+        Thread.sleep(2000L);
+        isIt = true;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Test test = new Test();
+    }
+}
+{% endhighlight %}
+打印的结果是false，这个例子就是隐式的this对象引用逸出，还没有实例化完成时，其他线程就已经要用到对象中的属性
+
+*stackoverflow上的一个例子(如果有多个实例在多个线程中被初始化，某些线程用的this可能是未被完全初始化的)：*
+{% highlight java linenos %}
+public class Test
+{
+    private static Test lastCreatedInstance;
+
+    public Test()
+    {
+        lastCreatedInstance = this;
+    }
+}
+{% endhighlight%}
+
+书（《Java并发编程实战》）上的会this逸出例子是：
+{% highlight java linenos %}
+public class ThisEscape {
+  public ThisEscape(EventSource source) {
+    source.registerListener(new EventListener() {
+      public void onEvent(Event e) {
+        doSomething(e);
+      }
+    });
+}
+{% endhighlight %}
+给出的正解是：
+{% highlight java linenos %}
+public class SafeListener {
+  private final EventListener listener;
+
+  private SafeListener() {
+    listener = new EventListener() {
+      public void onEvent(Event e) {
+        doSomething(e);
+      }
+    };
+  }
+
+  public static SafeListener newInstance(EventSource source) {
+    SafeListener safe = new SafeListener();
+    source.registerListener(safe.listener);
+    return safe;
+  }
+}
+{% endhighlight %}
+当构造好了SafeListener对象之后，我们才启动了监听线程，也就确保了SafeListener对象是构造完成之后在使用的SafeListener对象。
