@@ -294,10 +294,101 @@ public class PrivateLock{
 
 在某些情况下，通过多个线程安全类组合而成的类是线程安全的，而在某些情况下，这仅仅是一个好的开端。
 
-*【m】如果一个对象需要被多个线程安全地使用，
-
-简单来做：首先不能让该对象的字段逸出（不要有非final的public字段，且如果是final的public字段也可能逸出，如public ArrayList<Object>，这个ArrayList的Object就是可变的；不要通过方法把非final字段的引用扔出去，扔出去的final字段对象中不要包含可变的字段），然后把对象的每个方法都synchronized。这样保证了线程安全，但是并发大的时候性能降低。
-
-好的方法：不实用synchronized，但保证所有字段都是final的，且是安全发布的。*
+*【m】如果一个对象需要被多个线程安全地使用，【简单来做】：首先不能让该对象的字段逸出（不要有非final的public字段，且如果是final的public字段也可能逸出，如public ArrayList<Object>，这个ArrayList的Object就是可变的；不要通过方法把非final字段的引用扔出去，扔出去的final字段对象中不要包含可变的字段），然后把对象的每个方法都synchronized。这样保证了线程安全，但是并发大的时候性能降低。【好的方法（只是安全了，不一定比前一个好）】：不实用synchronized，但保证所有字段都是final的，且是安全发布的。*
 
 *【m】类的多个状态各自都是线程安全的，但经过组合得到的这个类却不一定是线程安全的，因为这些状态间彼此可能不是独立的，这时可以通过加锁机制来维护不变性条件以确保其线程安全性。同时还得避免发布这些状态，防止客户代码破坏其不变性条件。*
+
+*如果一个状态变量是线程安全的，并且没有任何不变性条件来约束它的值，在变量的操作上也不存在任何不允许的状态转化，那么就可以安全地发布这个变量。*
+
+## 4. 基础构建模块##
+
+### 4.1. 同步容器类###
+
+同步容器类包括Vector和Hashtable，二者是早期JDK的一部分，此外还包括在JDK1.2中添加的一些功能相似的类，这些同步的封装器类是由Collections.synchronizedXXX等工厂方法创建的。这些类实现线程安全的方法是：将它们的状态封装起来，并对每个公有方法都进行同步，使得每次只有一个线程能访问容器的状态。
+
+Vector 使用了synchronized线程安全，但是并发性能差。当它在迭代过程中被修改时，会抛出ConcurrentModificationException异常。这种“及时失败（fail-fast）”的迭代器不是一种完备的处理机制，而只是“善意地”捕获并发错误，因此只能作为并发问题的预警指示器。
+
+*正如封装对象的状态有助于维持不变性条件一样，封装对象的同步机制同样有助于确保实施同步策略。*
+
+Java5.0提供了多种并发容器类来改进同步容器的性能。同步容器将所有对象状态的访问都串行化，以实现它们的线程安全性。
+
+#### 4.1.2. 并发容器####
+
+**ConcurrentHashMap** 使用一种粒度更细的加锁机制（分段锁）来实现更大程度的共享，实现在并发访问环境下更高的吞吐量，而在单线程环境中只损失非常小的性能。不会抛出ConcurrentModificationException。是弱一致性的。如，由于size返回的结果在计算时可能已经过期了，它实际上只是一个估计值，因此允许size返回一个近似值而不是一个精确值。虽然这看上去有些令人不安，但事实上size和isEmpty这样的方法在并发环境下的用处很小，因为它们的返回值总在不断变化。因此这些操作的需求被弱化了，以换取对其他更重要操作的性能优化，包括get、put、containsKey和remove等。
+
+*大多数情况下，用ConcurrentHashMap来代替同步Map能进一步提高代码的可伸缩性，只有需要加锁Map以进行独占访问时，才应该放弃使用ConcurrentHashMap*。
+
+**CopyOnWriteArrayList**用于替代同步List，在每次修改时，都会创建并重新发布一个新的容器副本，从而实现可变性。多个线程可以对这个容器进行迭代，而不会彼此干扰或者与修改容器的线程相互干扰。“写入时复制”容器返回的迭代器不会抛出ConcurrentModificationException，并且返回的元素与迭代器创建时的元素完全一致，不必考虑之后修改操作所带来的影响。
+
+*仅当迭代操作远远多余修改操作时，才应该使用CopyOnWriteArrayList。例如事件通知系统，在大多数情况下，注册和注销事件监听的操作远少于接收事件通知的操作。*
+
+### 4.2. 阻塞队列和生产者-消费者模式###
+
+*在构建高可靠的应用程序时，有界队列是一种强大的资源管理工具：它们能抑制并防止产生过多的工作项，使应用程序在负荷过载的情况下变得更加健壮。*
+
+在类库中包含了BlockingQueue的多种实现，其中，LinkedBlockingQueue和ArrayBlockingQueue是FIFO队列，二者分别与LinkedList和ArrayList类似，但比同步List拥有更好的并发性能。
+
+### 4.3. 同步工具类###
+
+同步工具类包括：阻塞队列、信号量（Semaphore）、栅栏（Barrier）以及闭锁（Latch）。
+
+所有同步工具类都包含一些特定的结构化属性：它们封装了一些状态，这些状态将决定执行同步工具类的线程是继续执行还是等待，此外还提供了一些方法对状态进行操作，以及另一些方法用于高效地等待同步工具类进入到预期状态。
+
+#### 4.3.1. 闭锁####
+
+闭锁的作用相当于一扇门，在闭锁到达结束状态前，这扇门是关闭的，没有任何线程能通过，当到达结束状态时，这扇门会打开并允许所有线程通过。例如，在多玩家游戏中，所有玩家都进入了再开始。
+
+CountDownLatch是一种灵活的闭锁实现。它的状态包括一个计数器，该计数器被初始化为一个正数，表示需要等待的事件数量。countDown方法递减计数器，表示有一个事件已经发生了，而await方法等待计数器达到零，表示所有需要等待的事件都已经发生。如果非零，await会一直阻塞，或者等待中的线程中断，或者等待超时。
+
+#### 4.3.2. FutureTask####
+
+FutureTask也可以用作闭锁。（FutureTask实现了Future语义，表示一种抽象的可生成结果的计算）。FutureTask表示的计算是通过Callable来实现的，想到与一种可生成结果的Runnable。可以处于以下3种状态：*等待运行*、*正在运行*、*运行完成*。当FutureTask进入完成状态后，会永远停止在这个状态上。
+
+FutureTask在Executor框架中表示异步任务，此外还可以表示一些时间较长的计算，这些计算可以在使用计算结果之前启动。
+
+*所有并发问题都可以归结为如何协调对并发状态的访问。可变状态越少，就越容易确保线程安全性。*
+
+## 5. 任务执行##
+
+### 5.1. Executor框架###
+
+在Java类库中，任务执行的主要抽象不是Thread，而是Executor。
+{% highlight java linenos %}
+public interface Executor{
+  void execute(Runnable command);
+}
+{% endhighlight %}
+
+Executor的用法：
+{% highlight java linenos %}
+...
+private static final Executor exec = Executors.newFixedThreadPool(10);
+...
+Runnable task = new Runnable ...
+...
+exec.execute(task);
+...
+{% endhighlight %}
+可以很容易地修改程序的行为，只需要编写Executor的子类，如下：
+{% highlight java linenos %}
+public class NewExecutor implements Executor{
+  public void execute(Runnable r){
+    new Thread(r).start();//这里可以修改行为，
+    //如写为 r.run();    
+  }
+}
+{% endhighlight %}
+
+*每当看到下面这种形式的代码时：*
+{% highlight java linenos %}
+new Thread(runnable).start();
+{% endhighlight %}
+*并且希望获得一种更灵活的执行策略时，请考虑使用Executor来代替Thread。*
+
+### 5.2. 线程池###
+
+类库提供了一个灵活的线程池以及一些有用的默认配置，可以通过调用Executors中的静态工厂方法之一来创建一个线程池：
+
+**newFixedThreadPool**创建一个固定长度的线程池。每提交一个任务时就创建一个线程，直到达到最大数量；如果某个线程以外挂了，会补充一个新的线程。
+
+**newCachedThreadPool**
