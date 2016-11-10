@@ -191,6 +191,60 @@ ThreadLocal的作用是提供线程内的局部变量，这种变量在线程的
 
 final类型的域是不能修改的（但如果final域所引用的对象是可变的，这些被引用的对象是可以修改的。另，通过反射可以修改final域），此外，final域能确保初始化过程的安全性，从而可以不受限制地访问不可变对象，并在共享这些对象时无须同步。
 
+*修改final域，static 的final不能修改*
+{% highlight java linenos %}
+public class MyFinal {
+    private final int a = 1;
+    private static final int b = 1;
+    private static void out(String msg){
+        System.out.println(msg);
+    }
+    public static void Test() throws NoSuchFieldException, IllegalAccessException {
+        MyFinal f = new MyFinal();
+        out("`final` field can be modified.");
+        out("before: a="+f.a);
+
+        Field field = f.getClass().getDeclaredField("a");
+        field.setAccessible(true);
+        field.set(f,2);
+        out("after: a="+f.a);
+
+        out("`static final` filed can't be modified.");
+        out("before: b="+f.b);
+
+        Field field2 = f.getClass().getDeclaredField("b");
+        field2.setAccessible(true);
+        field2.set(f, 2);
+        out("after: b="+f.b);
+    }
+    public static void main(String[] args) throws  NoSuchFieldException,IllegalAccessException{
+        Test();
+    }
+}
+{% endhighlight %}
+
+{% highlight java linenos %}
+·`final` field can be modified.
+before: a=1
+after: a=1
+`static final` filed can't be modified.
+before: b=1
+Exception in thread "main" java.lang.IllegalAccessException: Can not set static final int field org.liuwei.learn.finalField.MyFinal.b to java.lang.Integer
+	at sun.reflect.UnsafeFieldAccessorImpl.throwFinalFieldIllegalAccessException(UnsafeFieldAccessorImpl.java:76)
+	at sun.reflect.UnsafeFieldAccessorImpl.throwFinalFieldIllegalAccessException(UnsafeFieldAccessorImpl.java:80)
+	at sun.reflect.UnsafeQualifiedStaticIntegerFieldAccessorImpl.set(UnsafeQualifiedStaticIntegerFieldAccessorImpl.java:77)
+	at java.lang.reflect.Field.set(Field.java:764)
+	at org.liuwei.learn.finalField.MyFinal.Test(MyFinal.java:30)
+	at org.liuwei.learn.finalField.MyFinal.main(MyFinal.java:34)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at com.intellij.rt.execution.application.AppMain.main(AppMain.java:144)
+
+Process finished with exit code 1
+{% endhighlight %}
+
 *正如“除非需要更高的可见性，否则应将所有域声明为私有域“是一个良好的编程习惯，”除非需要某个域是可变的，否则应将其声明为final域“，也是一个良好的编程习惯。*
 
 ### 2.5. 安全发布###
@@ -348,6 +402,24 @@ FutureTask在Executor框架中表示异步任务，此外还可以表示一些�
 
 *所有并发问题都可以归结为如何协调对并发状态的访问。可变状态越少，就越容易确保线程安全性。*
 
+#### 4.3.3. 信号量####
+
+计数信号量用来控制同时访问某个特定资源的操作数量，或者同时执行某个制定操作的数量，还可以用来实现某种资源池（如数据库连接池），或对容器施加边界。
+
+Semaphore中管理着一组虚拟的许可，许可的初始数量可通过构造函数来制定。执行操作时先获得许可（acquire），使用后释放（release）。acquire将阻塞直到有许可（或被中断，或操作超时）。release将返回一个许可给信号量。
+
+Semaphore不会将许可与线程关联，因此在一个线程中获得的许可可以在另一个线程中释放。
+
+信号量可以简化为二值信号量，即初始值为1的Semaphore。二值信号量可以作为互斥体（mutex），并具备不可重入的加锁语义。
+
+#### 4.3.4. 栅栏####
+
+栅栏（Barrier）类似于闭锁，能阻塞一组线程直到某个事件发生。栅栏与闭锁的区别在于，所有线程必须同时到达栅栏位置，才能继续执行。
+
+闭锁用于等待事件，而栅栏用于等待其他线程。
+
+一般使用CyclicBarrier。
+
 ## 5. 任务执行##
 
 ### 5.1. Executor框架###
@@ -363,6 +435,10 @@ Executor的用法：
 {% highlight java linenos %}
 ...
 private static final Executor exec = Executors.newFixedThreadPool(10);
+//newFixedThreadPool 返回的是ThreadPoolExecutor，
+//其继承自ExecutorService，可以强转成ExecutorService，
+//然后使用exec.submit来执行Callable的任务，
+//然后使用exec.shutdown来关闭线程池，不然JVM不会退出。
 ...
 Runnable task = new Runnable ...
 ...
@@ -391,4 +467,61 @@ new Thread(runnable).start();
 
 **newFixedThreadPool**创建一个固定长度的线程池。每提交一个任务时就创建一个线程，直到达到最大数量；如果某个线程以外挂了，会补充一个新的线程。
 
-**newCachedThreadPool**
+**newCachedThreadPool**创建一个可缓存的线程池，如果线程池规模超过了处理需求，将回收空闲的线程，而需求增加时，可以添加新的线程，线程池规模不存在限制。
+
+### 5.3. Executor的生命周期###
+
+Executor的实现通常会用来创建线程执行任务，但JVM只有在所有（非守护）线程全部终止后才会退出，ExecutorService需要使用shutdown来关闭，不然JVM不会退出。
+
+## 6.取消与关闭##
+
+*在Java的API或语言规范中，并没有将中断与任何取消语义关联起来，但实际上，如果在取消之外的其他操作中使用中断，都是不合适的。*
+
+每个线程都有一个boolean类型的中断状态。当线程中断时，这个状态将被设置为true。
+
+{% highlight java linenos %}
+public class Thread{
+  public void interrupt(){...}//中断目标线程
+  public boolean isInterrupted(){...}//查询中断状态
+  public static boolean interrupted(){...}//清除中断状态
+}
+{% endhighlight %}
+
+Thread.sleep、Object.wait等，都会检查线程何时中断，在发现中断时提前返回。它们在响应中断时执行的操作包括：清除中断状态，抛出InterruptedException。
+
+*调用interrupt并不意味着立即停止目标线程正则进行的工作，而只是传递了请求中断的消息*
+
+*通常，中断是实现取消的最合理方式。*
+
+{% highlight java linenos %}
+public class PrimeProducer extends Thread {
+    private final BlockingQueue<BigInteger> queue;
+    PrimeProducer(BlockingQueue<BigInteger> queue){
+        this.queue = queue;
+    }
+    public void run(){
+        try{
+            BigInteger p = BigInteger.ONE;
+            while (!Thread.currentThread().isInterrupted()){
+                System.out.println(p+"sleep 100 second.");
+                Thread.sleep(100000);
+                queue.put(p = p.nextProbablePrime());
+            }
+        }catch(InterruptedException consumed){
+            System.out.println("out...");
+            //允许线程退出
+        }
+    }
+    public void cancel(){
+        interrupt();
+    }
+    
+    public static void main(String args[]) throws InterruptedException {
+        BlockingQueue<BigInteger> queue = new LinkedBlockingQueue<BigInteger>();
+        PrimeProducer p = new PrimeProducer(queue);
+        p.start();
+        Thread.sleep(1000);
+        p.cancel();
+    }
+}
+{% endhighlight %}
