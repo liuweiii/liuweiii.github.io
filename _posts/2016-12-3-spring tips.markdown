@@ -2,7 +2,7 @@
 layout: post
 title:  "spring tips"
 date:   2016-12-3 06:21:20 +0800
-categories: java
+categories: spring
 tags:
 - learn
 - java
