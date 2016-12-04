@@ -9,6 +9,8 @@ tags:
 - spring
 ---
 
+*代码示例参考<a href='https://github.com/liuweiii/spring-demo-di-xml'>spring-demo-di-xml</a>*
+
 #### 1.Constructor-based dependency injection
 
 **1.1 真正的构造方法依赖注入**
