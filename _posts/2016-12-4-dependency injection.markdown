@@ -9,13 +9,13 @@ tags:
 - spring
 ---
 
-*代码示例参考<a href='https://github.com/liuweiii/spring-demo-di-xml'>spring-demo-di-xml</a>*
+*代码示例参考 <a href='https://github.com/liuweiii/spring-demo-di-xml' target='_blank'>spring-demo-di-xml</a>*
 
 #### 1.Constructor-based dependency injection
 
 **1.1 真正的构造方法依赖注入**
 
-1. 在java代码中定义类Bean1和类Bean2，类Bean2是类Bean1的构造函数的参数（`public Bean1(Bean2 b2)`）
+1. 在java代码中定义类Bean1和类Bean2，类Bean2是类Bean1的构造函数的参数`Bean1(Bean2 b2)`
 
 2. 在xml中定义构造依赖注入
 
