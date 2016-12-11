@@ -23,7 +23,7 @@ tags:
 
 **LOCAL_VARIABLE** 放在本地变量声明上
 
-**ANNOTATION_TYPE** 放在注解Type声明上
+**ANNOTATION_TYPE** 放在注解类型声明上，即注解注解的注解，如@Target、@Retention、@Inherited、@Documented
 
 **PACKAGE** 放在包声明上
 
@@ -35,6 +35,10 @@ tags:
 
 **源码（SOURCE）** 注解只在源码中存在，编译成.class文件后不存在。Annotations are to be discarded by the compiler。
 
-**class文件中（CLASS）** 在源码和.class文件中都存在，默认的行为。Annotations are to be recorded in the class file by the compiler but need not be retained by the VM at run time.  This is the default behavior.
+**class文件中（CLASS）** 在源码和.class文件中都存在，在编译过程中，被保留到class文件中，默认的行为。Annotations are to be recorded in the class file by the compiler but need not be retained by the VM at run time.  This is the default behavior.
 
 **运行时（RUNTIME）** 运行期间起作用，影响运行时逻辑，可以通过反射获取。Annotations are to be recorded in the class file by the compiler and retained by the VM at run time, so they may be read reflectively.
+
+### 3. 使用方法
+
+通过**反射**，找出被某个annotation附加上的类（或其方法、字段等），调用annnotation里的方法获取值进行操作。
