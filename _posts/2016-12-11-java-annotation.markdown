@@ -42,3 +42,7 @@ tags:
 ### 3. 使用方法
 
 通过**反射**，找出被某个annotation附加上的类（或其方法、字段等），调用annnotation里的方法获取值进行操作。
+
+
+![annotation-1](/public/img/2016-12-11-java-annotation-1.jpg)
+
