@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "java annotation"
-date:   2016-12-4 19:56:20 +0800
+date:   2016-12-11 19:56:20 +0800
 categories: java
 tags:
 - learn
