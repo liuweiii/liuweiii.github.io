@@ -12,6 +12,7 @@ tags:
 *代码示例参考 <a href='https://github.com/liuweiii/spring-demo-lifecycle-callback' target='_blank'>spring-demo-lifecycle-callback</a>*
 
 bean可以通过实现InitializingBean接口的afterPropertiesSet()方法来执行bean初始化后的操作；
+
 bean可以通过实现DisposableBean接口的destroy()方法来执行bean析构后的操作。
 
 ### initialization callbacks
@@ -82,3 +83,11 @@ public class Bean implements DisposableBean {
   }
 }
 ```
+
+### 使用beans上的default-init-method或default-destroy-method
+
+可以为beans标签指定default-init-method=xxx方法来为该beans下的所有bean指定默认init后的方法；
+
+可以为beans标签指定default-destroy-method=xxx方法来为该beans下的所有bean指定默认destroy后的方法。
+
+在指定了默认方法等beans里的某个bean上可以特别地使用init-method或destroy-method为它指定另一个int后或destroy后的方法，可以覆盖默认指定的方法。
