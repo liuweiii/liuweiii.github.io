@@ -94,3 +94,34 @@ public class Bean implements IBean {
   <lookup-method bean="bean" name="createBean"/>
 </bean>
 ```
+#### 4.注入方式
+
+3种注入方式：
+
+- xml注入
+- annotation注入
+- java注入
+
+##### 4.1.使用xml注入
+
+略。
+
+##### 4.1.使用annotation注入
+
+如下所示：
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+				http://www.springframework.org/schema/beans/spring-beans.xsd
+				http://www.springframework.org/schema/context
+				http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config/>
+</beans>
+```
+
+在需要使用annotation注入的bean的xml中，在`<beans>`中加入`<context:annotation-config/>`元素和`xmlns:context`及相应的`xsi:schemaLocation`
+
