@@ -135,3 +135,6 @@ public class Bean implements IBean {
 
 用于bean的setter上，被标注的setter中使用的参数必须在xml配置中在配置阶段配置上，否则会抛出BeanInitializationException异常。
 
+###### 2.2.2.2. Autowired
+
+用于bean的constructor上，
