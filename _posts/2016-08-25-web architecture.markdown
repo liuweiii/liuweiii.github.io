@@ -2,7 +2,7 @@
 layout: post
 title:  "大型网站技术架构"
 date:   2016-08-25 15:12:20 +0800
-categories: other
+categories: design
 tags:
 - learn
 - architecture

@@ -546,3 +546,5 @@ public static void timedRun(Runnable r, long timeout, TimeUnit unit) throws Inte
 {% endhighlight %}
 
 `当Future.get抛出InterruptedException或TimeoutException时，如果你知道不再需要结果，那么就可以调用Future.cancel来取消任务。`
+
+**“毒丸”对象**：指在一个放在队列上的对象，其含义是“当得到这个对象时，立即停止”。

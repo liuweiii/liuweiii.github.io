@@ -2,7 +2,7 @@
 layout: post
 title:  "Microservices"
 date:   2016-12-25 21:56:20 +0800
-categories: microservices
+categories: design
 tags:
 - learn
 - microservices
