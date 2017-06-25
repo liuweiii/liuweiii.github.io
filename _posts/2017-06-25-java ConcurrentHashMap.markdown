@@ -2,7 +2,7 @@
 layout: post
 title:  "java ConcurrentHashMap"
 date:   2017-06-25 21:56:20 +0800
-categories: design
+categories: java
 tags:
 - learn
 - java
