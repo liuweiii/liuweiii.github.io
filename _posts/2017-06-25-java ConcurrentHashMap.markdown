@@ -42,6 +42,8 @@ remove时，会讲当前Segment里被remove的节点之前的节点都复制一�
 
 ### 2. JDK 1.8中的实现
 
+初始化的时候仅设置一些参数值，在忘ConcurrentHashMap中放入元素的时候才会出事后table。
+
 #### 1.不使用分段（segment）方式，直接用一个HashEntry数组（table）来存储元素
 
 #### 2.table中的每个元素要么是一个链表，要么是一个红黑树（链表长度大于8时转换）
