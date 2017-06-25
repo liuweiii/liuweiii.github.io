@@ -13,6 +13,7 @@ tags:
 ![concurrenthashmap-1](/public/img/2017-06-25-concurrenthashmap.png)
 
 #### 1.初始化ConcurrentHashMap
+
 ConcurrentHashMap内部有一个Segment数组。每个Segment相当于一个HashMap，里面有一个HashEntry数组（HashEntry是一个链表）。
 
 ConcurrentHashMap初始化需要3个参数：
