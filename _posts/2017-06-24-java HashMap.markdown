@@ -52,3 +52,11 @@ jdk害怕有些人实现的hashcode散列的不够均匀，又搞了个方法帮
 
 ### 7.fail-fast
 当执行put、clean等操作时，会让modcount+1。执行foreach、next等操作时，会先记录modcount等值，待操作完后再与之前记录的值比较，如果不相等，说明被修改过，就抛出ConcurrentModificationException。
+
+### 8.LinkedHashMap
+是排序的。是HashMap的一个子类，内部是将HashMap里的所有entry用一个双向链表连起来了，这个链表用于保证顺序，顺序有两种：插入顺序和访问顺序，用一个bool的变量（叫做accessOrder）表示，这个值可以在构造时指定。插入新节点时，会放在链表尾部。如果是“访问顺序”，在get方法调用的时候会将当前访问的值放到链表尾部。
+
+LinkedHashMap与HashMap在结构上有两点不同：
+
+1. LinkedHashMap的Entry有额外两个字段（before和after），用与建立双向链表；
+2. LinkedHashMap会将HashMap里的所有entry按照插入顺序或访问顺序连起来。 
