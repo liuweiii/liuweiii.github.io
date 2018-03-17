@@ -7,8 +7,10 @@ tags:
 - learn
 - java
 - io
+- nio
 ---
-
+## IO
+### stream/reader
 - Input/Output stream 读写字节（byte），Reader 读写字符（character）。
 
 ``` 
@@ -37,3 +39,36 @@ InputStream in = uc.getInputStream();
 }
 catch (IOException e)
 ```
+
+## NIO
+
+### buffer
+![java-nio-1](/public/img/2018-03-17-java-nio-buffer1.png)
+#### 属性：
+##### capacity 容量
+buffer里能存储元素的最大个数，buffer创建后就不能修改。
+##### limit 上限
+最后一个有效元素的下一个位置。比如往capacity=100的buffer中，从头开始存入10个元素，则limit=10，limit的作用在于channel从buffer读数据的时候知道读到limit这个位置就读完了。
+##### position 位置
+下一个可以写入元素的位置。get和put（读写）能改变它。
+##### mark 标记
+标记一个位置，可以用于其他作用，如一般channel读取的时候是从position开始读到limit位置。如果想从中间位置开始读，可以先mark现在的位置，把position设置为中间，读完后再把position设置为刚才mark的位置。
+#### 方法
+##### get读
+两种get方法： 
+
+1. 无参数的get。一次读一个元素，postion会加1
+2. 带参数（index）的get。读取一个位于index位置的元素，postion不会变。
+
+##### put写
+##### flip翻转
+##### compact压缩
+##### mark标记
+##### reset重置
+##### clear清空
+##### compareTo比较
+##### equals相等
+
+### channel
+
+### selector
