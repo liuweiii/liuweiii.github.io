@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "java io"
+title:  "java io/nio"
 date:   2018-03-01 21:24:20 +0800
 categories: java
 tags:
@@ -54,20 +54,39 @@ buffer里能存储元素的最大个数，buffer创建后就不能修改。
 ##### mark 标记
 标记一个位置，可以用于其他作用，如一般channel读取的时候是从position开始读到limit位置。如果想从中间位置开始读，可以先mark现在的位置，把position设置为中间，读完后再把position设置为刚才mark的位置。
 #### 方法
-##### get读
+##### get读/put写
 两种get方法： 
 
-1. 无参数的get。一次读一个元素，postion会加1
-2. 带参数（index）的get。读取一个位于index位置的元素，postion不会变。
+1. 无参数的get/put。一次读/写一个元素，postion会加1
+2. 带参数（index）的get/put。读取/写入一个位于index位置的元素，postion不会变。
 
-##### put写
+##### limit上限
+设置上限值。
+
 ##### flip翻转
+使limit=position，position=0，mark=-1，目的是写完毕了送入channel的时候重置position和limit使适合读（从position读到limit，即从0读到原来写入完毕读位置）。
+
 ##### compact压缩
+为了从缓冲区中释放一部分数据，然后重新填充，需要把释放后剩下的数据全部往左边移动。
+![java-nio-1](/public/img/2018-03-17-java-nio-buffer2.png)
+
 ##### mark标记
+设置mark值。
+
 ##### reset重置
+使position=mark。
+
 ##### clear清空
-##### compareTo比较
+使positon=0，limit=capacity，mark=-1
+
+#### rewind 倒带
+使positon=0，mark=-1
+
 ##### equals相等
+只要[position，limit)之间的元素一一相等（类型、值都一样）即可（如buffer1的position=2，limit=5，buffer2的position=10，limit=13，它们两个的[position，limit)间的元素一一相等，它们两equals就是true）。
+
+##### compareTo比较
+也是比较两个buffer的[position，limit)之间的元素，返回0、1、-1，代表相等、大于、小于。
 
 ### channel
 
