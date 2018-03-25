@@ -41,6 +41,9 @@ catch (IOException e)
 ```
 
 ## NIO
+*channel与buffer的关系*
+
+把数据的传输比喻成将矿山上的矿石（data）运输到城市（文件或套接字）的过程，首先矿石（data）要放到车（buffer）上，然后将车开到通往城市的某条道路（channel）运输到城市里。
 
 ### buffer
 ![java-nio-1](/public/img/2018-03-17-java-nio-buffer1.png)
@@ -88,6 +91,51 @@ buffer里能存储元素的最大个数，buffer创建后就不能修改。
 ##### compareTo比较
 也是比较两个buffer的[position，limit)之间的元素，返回0、1、-1，代表相等、大于、小于。
 
+##### 批量移动
+```public CharBuffer get (char [] dst)
+public CharBuffer get (char [] dst, int offset, int length)
+public final CharBuffer put (char[] src)
+public CharBuffer put (char [] src, int offset, int length)
+public CharBuffer put (CharBuffer src)
+public final CharBuffer put (String src)
+public CharBuffer put (String src, int start, int end)
+```
+
+```
+char [] smallArray = new char [10];
+while (buffer.hasRemaining( )) {
+	int length = Math.min (buffer.remaining( ), smallArray.length);
+	buffer.get (smallArray, 0, length);
+	processData (smallArray, length);
+}
+```
+
+##### ByteBuffer
+字节缓冲区可以成为通道所执行的 I/O 的源头和/或目标，其他类型缓冲区不行。只有ByteBuffer可以作为channel的参数。
+
 ### channel
+I/O 可以分为广义的两大类别：File I/O 和 Stream I/O。相应地有两种类型的通道也文件（file）通道和套接字（socket）通道。
+
+Socket 通道有可以直接创建新 socket 通道的工厂方法。但FileChannel只能通过在一个打开的 RandomAccessFile、 FileInputStream 或 FileOutputStream对象上调用 getChannel( )方法来获取。
+
+```
+SocketChannel sc = SocketChannel.open( );
+sc.connect (new InetSocketAddress ("somehost", someport));
+ServerSocketChannel ssc = ServerSocketChannel.open( );
+ssc.socket( ).bind (new InetSocketAddress (somelocalport));
+DatagramChannel dc = DatagramChannel.open( );
+RandomAccessFile raf = new RandomAccessFile ("somefile", "r");
+FileChannel fc = raf.getChannel( );
+```
+#### FileChannel
+
+FileChannel本身上线程安全的，但是它的通道位置、文件大小等操作不是线程安全的。
+
+同一个JVM上所有FileChannel看到的某个文件的视图是一样的。但通过一个FileChannel实例看到的某个文件的视图和通过外部非java进程看到试图不一定是一样的。
+
+#### SocketChannel/ServerSocketChannel/DatagramChannel
+- 数据报通道（DatagramChannel）用于实现UDP
+- 流通道（Socket通道）用于实现TCP
+- DatagramChannel和SocketChannel实现读写功能的接口,而ServerSocketChannel不实现。ServerSocketChannel负责监听传入的连接和创建新的SocketChannel对象，它本身从不传输数据。
 
 ### selector
