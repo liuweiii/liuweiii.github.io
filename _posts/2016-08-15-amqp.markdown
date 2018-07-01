@@ -2,9 +2,9 @@
 layout: post
 title:  "amqp-1"
 date:   2016-07-11 22:03:20 +0800
-categories: other
+categories: MQ
 tags:
 - learn
 ---
 
-消息中间件的主要功能是消息的路由(Routing)和缓存(Buffering)
+消息中间件的主要功能是消息的路由(Routing)、缓存(Buffering)、模块间解偶。
