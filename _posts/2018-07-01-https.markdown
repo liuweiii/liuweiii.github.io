@@ -1,0 +1,43 @@
+---
+layout: post
+title:  "HTTPS"
+date:   2018-07-01 21:24:20 +0800
+categories: network
+tags:
+- learn
+- https
+---
+## 1 概述
+
+### 1.1 角色
+- server：提供https服务的远程服务器。上面有**server公钥**、**server密钥**、**server对称加密密钥**、**证书**。
+- client：发起https请求的本地程序，一般为浏览器。上面有**client公钥**、**CA公钥**、**client对称加密密钥**。
+- CA：生成server证书的机构。 上面有**CA公钥**、**CA密钥**。
+
+### 1.2 原理
+
+一句话简述：**client通过证书验证得到有效的server公钥后，server和client使用非对称加密方式获取对方的对称加密密钥，然后双方使用对称加密方式通信。**
+
+client请求server，拿到证书，跟client本地的CA公钥验证确认证书是有效后，使用证书里的server公钥将client公钥和client对称加密密钥发给server，server使用client公钥将server对称加密密钥发给client，然后client和server就通过对称加密算法进行通信。
+
+## 2 证书
+
+证书是存放在server上的、由CA生成的。
+证书中包含server公钥、签名算法（如MD5）、**由server公钥通过签名算法生成的摘要** 与 **CA密钥** 生成的 签名。
+
+## 3 通信过程
+
+### 3.1 client请求server，获取证书
+
+### 3.2 client验证证书的有效性，获取证书中server公钥
+ 1. client使用证书中的签名算法，将证书中的server公钥签名，生成一个摘要，暂且叫它**摘要1**；
+ 2. client使用本地的CA公钥将证书中的签名解密，得到由server公钥通过签名算法生成的摘要，暂且叫它**摘要2**；
+ 3. 如果**摘要1**和**摘要2**匹配，说明这个证书是有效的，证书里的server公钥就是ok的。
+
+### 3.3 client使用server公钥加密client的公钥和client的对称加密密钥后，发给server
+ 
+### 3.4 server使用server密钥解密client发来的东西后得到client的公钥和client的对称加密密钥
+
+### 3.5 server使用client的公钥加密server的对称加密密钥后，发给client
+
+### 3.6 client和server使用对称加密密钥相互通信。
