@@ -18,6 +18,25 @@ tags:
 
 不允许子类覆写。
 
-### 3.锁和原子变量###
+### 3. 锁和原子变量###
 
-在高度竞争下，锁性能好；在竞争稍缓时，原子变量好。*比如道路拥塞的时候，交通信号灯能够实现更高的吞吐量，而在低拥堵时，环岛实现更高的吞吐量。*
+在高度竞争下，锁性能好；在竞争稍缓时，原子变量好。更近一步说，竞争高，用重量锁；竞争低，用原子变量、自旋锁、偏向锁、轻量锁。*比如道路拥塞的时候，交通信号灯能够实现更高的吞吐量，而在低拥堵时，环岛实现更高的吞吐量。*
+
+### 4. System.nanoTime()和System.currentTimeMillis()###
+
+- nanoTime精度纳秒级，currentTimeMillis精度毫秒级，前者精度大于后者；
+- nanoTime基于JVM启动时的时间点，currentTimeMillis基于1970-01-01；
+- nanoTime基于CPU时间，无法被修改，currentTimeMillis基于系统时间，操作系统时间修改会影响它。
+
+### 5. Random、ThreadLocalRandom和SecureRandom
+
+都是线程安全的。Random需要使用new Random()来获取实例，ThreadLocalRandom使用ThreadLocalRandom.current()来获取实例。Random使用了CAS，多线程竞争激烈时性能较差，此时可以使用ThreadLocalRandom。
+
+Random和ThreadLocalRandom都是伪随机数，安全要求高的时候使用SecureRandom。
+
+SecureRandom使用/dev/random和/dev/urandom提供阻塞和非阻塞两种生成随机数的方式，[参考1]。*/dev/random输出的随机数序列质量更高，适合于高强度的加密算法。/dev/urandom总是返回所请求的随机数序列，无论熵池的熵估算值是否为零；而/dev/random则只返回熵估算值所允许的最长的随机数序列，当熵估算值为零时，请求将被阻塞直到熵估算值增大到一定域值。*
+
+ThreadLocalRandom和SecureRandom都是Random的子类。因此都是使用.nextXXX函数来获取随机数。
+
+
+[参考1]:https://my.oschina.net/lieefu/blog/549455
