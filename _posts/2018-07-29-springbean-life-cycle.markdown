@@ -9,6 +9,16 @@ tags:
 
 ## 1. 创建
 
+- new
+- di
+- set name
+- set factory/appcontext
+- before
+- init-method
+- after
+- destroy
+- destroy-method
+
 ### 1.1 bean的建立
 
 容器查找bean的定义并将其实例化。
@@ -24,6 +34,8 @@ spring依赖注入，使用bean定义信息配置bean的属性。
 ### 1.4 bean放入工厂
 
 如果bean实现了BeanFactoryAware接口，将调用setBeanFactory方法。
+
+如果bean实现了ApplicationContextAware接口，将调用setApplicationContext方法。
 
 ### 1.5 before init
 
