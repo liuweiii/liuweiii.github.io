@@ -2,7 +2,7 @@
 layout: post
 title:  "金字塔原理"
 date:   2020-11-28 11:56:20 +0800
-categories: soft skill
+categories: soft-skill
 tags:
 - thinking
 - writing
